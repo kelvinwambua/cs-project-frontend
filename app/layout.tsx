@@ -1,18 +1,18 @@
-import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google"
-
+import { Space_Grotesk, Space_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 
-const fontSans = Geist({
+const fontDisplay = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-display",
 })
 
-const jetbrainsMono = JetBrains_Mono({
+const fontMono = Space_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+  weight: ["400", "700"],
 })
 
 export default function RootLayout({
@@ -26,9 +26,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn(
         "antialiased",
-        fontSans.variable,
-        "font-mono",
-        jetbrainsMono.variable
+        fontDisplay.variable,
+        fontMono.variable,
+        "font-sans"
       )}
     >
       <body>
