@@ -28,7 +28,11 @@ import { authClient } from "@/lib/auth-client"
 const navItems = [
   { label: "Dashboard", href: "/driver/dashboard", icon: LayoutDashboard },
   { label: "Available Jobs", href: "/driver/requests", icon: Inbox },
-  { label: "Active Delivery", href: "/driver/active", icon: Navigation },
+  {
+    label: "Active Delivery",
+    href: "/driver/active-delivery",
+    icon: Navigation,
+  },
   { label: "History", href: "/driver/history", icon: History },
   { label: "Profile", href: "/driver/profile", icon: UserCircle },
 ]
