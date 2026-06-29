@@ -1,14 +1,12 @@
 import Link from "next/link"
 import { Bike } from "lucide-react"
-import { Navbar } from "@/components/navbar"
+
 import { Footer } from "@/components/footer"
 import { AuthForm } from "@/components/auth/auth-form"
 
 export default function RegisterDriverPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
-
       <main className="flex flex-1 items-center justify-center px-4 py-20 sm:px-6 lg:px-8">
         <div className="w-full max-w-md">
           <div className="mb-10">

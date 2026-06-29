@@ -1,13 +1,11 @@
 import Link from "next/link"
 import { ArrowUpRight, Building2, Bike } from "lucide-react"
-import { Navbar } from "@/components/navbar"
+
 import { Footer } from "@/components/footer"
 
 export default function RegisterPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
-
       <main className="flex flex-1 items-center justify-center px-4 py-20 sm:px-6 lg:px-8">
         <div className="w-full max-w-2xl">
           <div className="mb-10">
