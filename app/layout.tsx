@@ -3,6 +3,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
+import { Providers } from "./providers/query-provider"
 
 const fontDisplay = Space_Grotesk({
   subsets: ["latin"],
@@ -33,7 +34,7 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
-          {children}
+          <Providers>{children}</Providers>
           <Toaster />
         </ThemeProvider>
       </body>

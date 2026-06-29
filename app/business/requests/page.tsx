@@ -3,37 +3,82 @@ import Link from "next/link"
 import { cookies } from "next/headers"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Package, Plus, MapPin, Clock, Ruler } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+  Package,
+  Plus,
+  ArrowRight,
+  Truck,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Loader2,
+} from "lucide-react"
 
-const STATUS_STYLES: Record<
+const STATUS_CONFIG: Record<
   string,
-  { variant: "default" | "secondary" | "destructive" | "outline"; dot: string }
+  {
+    variant: "default" | "secondary" | "destructive" | "outline"
+    label: string
+  }
 > = {
-  pending: { variant: "secondary", dot: "bg-muted-foreground" },
-  accepted: { variant: "default", dot: "bg-foreground" },
-  picked_up: { variant: "default", dot: "bg-foreground" },
-  delivered: { variant: "outline", dot: "bg-muted-foreground" },
-  cancelled: { variant: "destructive", dot: "bg-destructive-foreground" },
+  pending: { variant: "secondary", label: "Pending" },
+  accepted: { variant: "default", label: "Accepted" },
+  picked_up: { variant: "default", label: "Picked up" },
+  delivered: { variant: "outline", label: "Delivered" },
+  cancelled: { variant: "destructive", label: "Cancelled" },
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Pending",
-  accepted: "Accepted",
-  picked_up: "Picked up",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
+const STATUS_ICON: Record<string, React.ReactNode> = {
+  pending: <Loader2 className="h-3.5 w-3.5" />,
+  accepted: <Truck className="h-3.5 w-3.5" />,
+  picked_up: <Truck className="h-3.5 w-3.5" />,
+  delivered: <CheckCircle2 className="h-3.5 w-3.5" />,
+  cancelled: <XCircle className="h-3.5 w-3.5" />,
 }
 
 async function getDeliveries(cookieHeader: string) {
   const res = await fetch(
     `${process.env.API_URL ?? "http://localhost:3000"}/api/deliveries`,
-    {
-      headers: { cookie: cookieHeader },
-      cache: "no-store",
-    }
+    { headers: { cookie: cookieHeader }, cache: "no-store" }
   )
   if (!res.ok) return null
   return res.json()
+}
+
+async function cancelDelivery(formData: FormData) {
+  "use server"
+  const id = formData.get("id") as string
+  const cookieStore = await cookies()
+  const cookieHeader = cookieStore.toString()
+  await fetch(
+    `${process.env.API_URL ?? "http://localhost:3000"}/api/deliveries/${id}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", cookie: cookieHeader },
+      body: JSON.stringify({ action: "cancel" }),
+    }
+  )
+  redirect("/business/requests")
 }
 
 export default async function BusinessRequestsPage() {
@@ -43,99 +88,199 @@ export default async function BusinessRequestsPage() {
 
   if (deliveries === null) redirect("/login")
 
+  const pending = deliveries.filter((d: any) => d.status === "pending").length
+  const active = deliveries.filter(
+    (d: any) => d.status === "accepted" || d.status === "picked_up"
+  ).length
+  const delivered = deliveries.filter(
+    (d: any) => d.status === "delivered"
+  ).length
+
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-background">
-        <div className="mx-auto max-w-2xl px-4 py-6">
-          <div className="flex items-end justify-between">
+        <div className="mx-auto max-w-5xl px-6 py-8">
+          <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Deliveries</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Deliveries
+              </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {deliveries.length === 0
-                  ? "No deliveries yet"
-                  : `${deliveries.length} order${deliveries.length !== 1 ? "s" : ""}`}
+                Manage and track all your delivery requests
               </p>
             </div>
-            <Button asChild className="h-10 gap-2">
+            <Button asChild>
               <Link href="/business/requests/new">
-                <Plus className="h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4" />
                 New delivery
               </Link>
             </Button>
           </div>
+
+          {deliveries.length > 0 && (
+            <div className="mt-6 grid grid-cols-3 gap-4">
+              <div className="rounded-lg border bg-card p-4">
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Pending
+                </p>
+                <p className="mt-1.5 text-3xl font-bold tabular-nums">
+                  {pending}
+                </p>
+              </div>
+              <div className="rounded-lg border bg-card p-4">
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  In transit
+                </p>
+                <p className="mt-1.5 text-3xl font-bold tabular-nums">
+                  {active}
+                </p>
+              </div>
+              <div className="rounded-lg border bg-card p-4">
+                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  Delivered
+                </p>
+                <p className="mt-1.5 text-3xl font-bold tabular-nums">
+                  {delivered}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-6">
+      <div className="mx-auto max-w-5xl px-6 py-6">
         {deliveries.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-20 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border bg-muted">
-              <Package className="h-6 w-6 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-24 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-muted">
+              <Package className="h-5 w-5 text-muted-foreground" />
             </div>
-            <p className="text-base font-semibold">No deliveries yet</p>
+            <p className="mt-4 text-sm font-semibold">No deliveries yet</p>
             <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-              Create your first delivery request and a driver will be assigned
-              to you.
+              Create your first delivery and a nearby driver will be assigned
+              automatically.
             </p>
-            <Button className="mt-6 gap-2" asChild>
+            <Button className="mt-6" asChild>
               <Link href="/business/requests/new">
-                <Plus className="h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4" />
                 New delivery
               </Link>
             </Button>
           </div>
         ) : (
-          <div className="flex flex-col divide-y overflow-hidden rounded-2xl border bg-card shadow-sm">
-            {deliveries.map((d: any) => {
-              const style = STATUS_STYLES[d.status] ?? STATUS_STYLES.pending
-              const locationSummary = [
-                d.dropoffBuilding,
-                d.dropoffNeighborhood,
-                d.dropoffCity,
-              ]
-                .filter(Boolean)
-                .join(", ")
+          <div className="overflow-hidden rounded-xl border bg-card">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[200px]">Recipient</TableHead>
+                  <TableHead>Destination</TableHead>
+                  <TableHead className="text-right">Distance</TableHead>
+                  <TableHead className="text-right">ETA</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="w-[80px]" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {deliveries.map((d: any) => {
+                  const cfg = STATUS_CONFIG[d.status] ?? STATUS_CONFIG.pending
+                  const locationSummary = [d.dropoffNeighborhood, d.dropoffCity]
+                    .filter(Boolean)
+                    .join(", ")
 
-              return (
-                <Link
-                  key={d.id}
-                  href={`/business/requests/${d.id}`}
-                  className="flex items-start justify-between gap-4 p-5 transition-colors hover:bg-muted/40"
-                >
-                  <div className="flex min-w-0 flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm leading-none font-semibold">
-                        {d.recipientName}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">
-                        {locationSummary || d.dropoffAddress}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Ruler className="h-3 w-3" />
+                  return (
+                    <TableRow key={d.id} className="group">
+                      <TableCell>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {d.recipientName}
+                          </p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {d.recipientPhone}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <p className="max-w-[220px] truncate text-sm">
+                          {locationSummary || d.dropoffAddress}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">
                         {Number(d.distanceKm).toFixed(1)} km
-                      </span>
-                      <span className="h-3 w-px bg-border" />
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />~
-                        {Math.round(d.estimatedMinutes)} min
-                      </span>
-                      <span className="h-3 w-px bg-border" />
-                      <span className="text-xs font-semibold">
+                      </TableCell>
+                      <TableCell className="text-right text-sm tabular-nums">
+                        ~{Math.round(d.estimatedMinutes)} min
+                      </TableCell>
+                      <TableCell className="text-right text-sm font-medium tabular-nums">
                         KES {d.price}
-                      </span>
-                    </div>
-                  </div>
-                  <Badge variant={style.variant} className="mt-0.5 shrink-0">
-                    {STATUS_LABEL[d.status]}
-                  </Badge>
-                </Link>
-              )
-            })}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={cfg.variant} className="gap-1.5">
+                          {STATUS_ICON[d.status]}
+                          {cfg.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-1">
+                          {d.status === "pending" && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-destructive opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Cancel this delivery?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    The delivery for{" "}
+                                    <span className="font-medium text-foreground">
+                                      {d.recipientName}
+                                    </span>{" "}
+                                    will be cancelled. This cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Keep it</AlertDialogCancel>
+                                  <form action={cancelDelivery}>
+                                    <input
+                                      type="hidden"
+                                      name="id"
+                                      value={d.id}
+                                    />
+                                    <AlertDialogAction
+                                      type="submit"
+                                      className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
+                                    >
+                                      Cancel delivery
+                                    </AlertDialogAction>
+                                  </form>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                            asChild
+                          >
+                            <Link href={`/business/requests/${d.id}`}>
+                              <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>
