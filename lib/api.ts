@@ -74,6 +74,48 @@ export interface HistoryResponse {
   offset: number
 }
 
+export interface DriverOverview {
+  total: number
+  delivered: number
+  cancelled: number
+  completionRate: string
+  grossRevenue: string
+  platformFee: string
+  platformCommissionRate: number
+  totalEarnings: string
+  avgDistanceKm: string
+  avgEstimatedMinutes: string
+  pendingOtpVerifications: number
+}
+
+export interface DriverVolumePoint {
+  period: string
+  total: number
+  delivered: number
+  grossRevenue: string
+  platformFee: string
+  earnings: string
+}
+
+export interface PayoutAccount {
+  id: string
+  bankCode: string
+  bankName: string | null
+  accountNumber: string
+  accountName: string
+  paystackRecipientCode: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BankOption {
+  name: string
+  code: string
+  slug: string
+  currency: string
+  type: string
+}
+
 export const analyticsApi = {
   businessOverview: (): Promise<BusinessOverview> =>
     apiFetch("/api/analytics/business/overview"),
@@ -91,6 +133,23 @@ export const analyticsApi = {
     if (params?.offset) q.set("offset", String(params.offset))
     if (params?.status) q.set("status", params.status)
     return apiFetch(`/api/analytics/business/history?${q.toString()}`)
+  },
+  driverOverview: (): Promise<DriverOverview> =>
+    apiFetch("/api/analytics/driver/overview"),
+  driverVolume: (
+    period: "daily" | "weekly" | "monthly" = "daily"
+  ): Promise<DriverVolumePoint[]> =>
+    apiFetch(`/api/analytics/driver/volume?period=${period}`),
+  driverHistory: (params?: {
+    limit?: number
+    offset?: number
+    status?: DeliveryStatus
+  }): Promise<HistoryResponse> => {
+    const q = new URLSearchParams()
+    if (params?.limit) q.set("limit", String(params.limit))
+    if (params?.offset) q.set("offset", String(params.offset))
+    if (params?.status) q.set("status", params.status)
+    return apiFetch(`/api/analytics/driver/history?${q.toString()}`)
   },
 }
 
@@ -121,4 +180,32 @@ export const deliveriesApi = {
     }),
   businessHistory: (): Promise<Delivery[]> =>
     apiFetch("/api/deliveries/business/history"),
+}
+
+export const payoutsApi = {
+  getBankAccount: (): Promise<PayoutAccount | null> =>
+    apiFetch("/api/payouts/bank-account"),
+  listBanks: (): Promise<BankOption[]> => apiFetch("/api/payouts/banks"),
+  verifyAccount: (body: {
+    accountNumber: string
+    bankCode: string
+  }): Promise<{ accountName: string; accountNumber: string }> =>
+    apiFetch("/api/payouts/verify-account", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  saveBankAccount: (body: {
+    accountNumber: string
+    bankCode: string
+    bankName?: string
+  }): Promise<{ success: boolean; accountName: string }> =>
+    apiFetch("/api/payouts/bank-account", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  transfer: (body: { amount: number; reason?: string }) =>
+    apiFetch("/api/payouts/transfer", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 }

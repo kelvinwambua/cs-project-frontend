@@ -23,7 +23,7 @@ async function getRole(request: NextRequest): Promise<string | null> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const protectedRoutes = ["/driver", "/business", "/admin"]
