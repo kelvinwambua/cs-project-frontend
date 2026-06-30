@@ -41,7 +41,7 @@ import Image from "next/image"
 const deliveryNavItems = [
   { label: "Overview", href: "/business/dashboard", icon: Home },
   { label: "Requests", href: "/business/requests", icon: Package },
-  { label: "Active deliveries", href: "/business/deliveries", icon: Truck },
+  { label: "Deliveries", href: "/business/deliveries", icon: Truck },
   { label: "History", href: "/business/history", icon: History },
 ]
 

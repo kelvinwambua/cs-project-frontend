@@ -64,6 +64,7 @@ const STATUS_CONFIG: Record<
     variant: "default" | "secondary" | "destructive" | "outline"
   }
 > = {
+  awaiting_payment: { label: "Awaiting payment", variant: "outline" },
   pending: { label: "Pending", variant: "outline" },
   accepted: { label: "Accepted", variant: "secondary" },
   picked_up: { label: "In Transit", variant: "default" },
@@ -473,12 +474,18 @@ export default function BusinessDashboardPage() {
                 setHistoryOffset(0)
               }}
             >
-              <SelectTrigger className="w-36 font-mono text-xs">
+              <SelectTrigger className="w-40 font-mono text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all" className="font-mono text-xs">
                   All statuses
+                </SelectItem>
+                <SelectItem
+                  value="awaiting_payment"
+                  className="font-mono text-xs"
+                >
+                  Awaiting payment
                 </SelectItem>
                 <SelectItem value="pending" className="font-mono text-xs">
                   Pending

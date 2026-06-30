@@ -25,6 +25,7 @@ import {
   Truck,
   CheckCircle2,
   Loader2,
+  CreditCard,
 } from "lucide-react"
 import {
   AlertDialog,
@@ -49,6 +50,11 @@ const STATUS_CONFIG: Record<
     icon: React.ReactNode
   }
 > = {
+  awaiting_payment: {
+    variant: "secondary",
+    label: "Awaiting payment",
+    icon: <CreditCard className="h-3.5 w-3.5" />,
+  },
   pending: {
     variant: "secondary",
     label: "Waiting for driver",
@@ -436,7 +442,8 @@ export default function BusinessRequestDetail({
               </div>
             )}
 
-            {delivery.status === "pending" && (
+            {(delivery.status === "pending" ||
+              delivery.status === "awaiting_payment") && (
               <div className="flex flex-col gap-2">
                 {error && (
                   <p className="text-center text-sm text-destructive">

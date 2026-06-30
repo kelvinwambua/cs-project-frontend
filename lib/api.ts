@@ -14,6 +14,7 @@ export async function apiFetch(path: string, options?: RequestInit) {
 }
 
 export type DeliveryStatus =
+  | "awaiting_payment"
   | "pending"
   | "accepted"
   | "picked_up"
@@ -29,9 +30,13 @@ export interface Delivery {
   pickupAddress: string
   pickupNeighborhood: string | null
   pickupCity: string | null
+  pickupLat: number
+  pickupLng: number
   dropoffAddress: string
   dropoffNeighborhood: string | null
   dropoffCity: string | null
+  dropoffLat: number
+  dropoffLng: number
   notes: string | null
   distanceKm: number
   estimatedMinutes: number
@@ -72,12 +77,10 @@ export interface HistoryResponse {
 export const analyticsApi = {
   businessOverview: (): Promise<BusinessOverview> =>
     apiFetch("/api/analytics/business/overview"),
-
   businessVolume: (
     period: "daily" | "weekly" | "monthly" = "daily"
   ): Promise<VolumePoint[]> =>
     apiFetch(`/api/analytics/business/volume?period=${period}`),
-
   businessHistory: (params?: {
     limit?: number
     offset?: number
@@ -94,8 +97,13 @@ export const analyticsApi = {
 export const deliveriesApi = {
   list: (): Promise<Delivery[]> => apiFetch("/api/deliveries"),
   get: (id: string): Promise<Delivery> => apiFetch(`/api/deliveries/${id}`),
-  create: (body: unknown): Promise<Delivery> =>
-    apiFetch("/api/deliveries", { method: "POST", body: JSON.stringify(body) }),
+  initiate: (
+    body: unknown
+  ): Promise<{ deliveryId: string; authorizationUrl: string }> =>
+    apiFetch("/api/deliveries/initiate", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   cancel: (id: string): Promise<Delivery> =>
     apiFetch(`/api/deliveries/${id}`, {
       method: "PATCH",
@@ -111,4 +119,6 @@ export const deliveriesApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  businessHistory: (): Promise<Delivery[]> =>
+    apiFetch("/api/deliveries/business/history"),
 }

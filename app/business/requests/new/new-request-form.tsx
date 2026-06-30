@@ -375,7 +375,7 @@ export default function NewRequestForm({ savedProfile }: Props) {
   const handleSubmit = async () => {
     setSubmitting(true)
     try {
-      const result = await apiFetch("/api/deliveries", {
+      const result = await apiFetch("/api/deliveries/initiate", {
         method: "POST",
         body: JSON.stringify({
           recipientName,
@@ -401,7 +401,7 @@ export default function NewRequestForm({ savedProfile }: Props) {
           notes: notes || undefined,
         }),
       })
-      router.push(`/business/requests/${result.id}`)
+      window.location.href = result.authorizationUrl
     } catch (err: any) {
       setErrors({ submit: err.message })
       setSubmitting(false)

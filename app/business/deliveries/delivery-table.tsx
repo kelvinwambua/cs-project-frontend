@@ -98,6 +98,12 @@ const STATUS_CONFIG: Record<
     className: string
   }
 > = {
+  awaiting_payment: {
+    label: "Awaiting payment",
+    variant: "outline",
+    className:
+      "border-orange-400 text-orange-600 bg-orange-50 dark:bg-orange-950/30 dark:text-orange-400",
+  },
   pending: {
     label: "Pending",
     variant: "outline",
@@ -298,7 +304,8 @@ function DeliverySheet({
             </>
           )}
 
-          {delivery.status === "pending" && (
+          {(delivery.status === "pending" ||
+            delivery.status === "awaiting_payment") && (
             <>
               <Separator />
               <Button
@@ -469,7 +476,8 @@ export function DeliveriesTable() {
                   <MapPin className="mr-2 h-4 w-4" />
                   View details
                 </DropdownMenuItem>
-                {d.status === "pending" && (
+                {(d.status === "pending" ||
+                  d.status === "awaiting_payment") && (
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
                     onClick={() => setCancelTarget(d.id)}
@@ -526,11 +534,12 @@ export function DeliveriesTable() {
             value={statusFilter}
             onValueChange={(v) => setStatusFilter(v as DeliveryStatus | "all")}
           >
-            <SelectTrigger className="h-9 w-[140px]">
+            <SelectTrigger className="h-9 w-[160px]">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="awaiting_payment">Awaiting payment</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
               <SelectItem value="picked_up">Picked up</SelectItem>
